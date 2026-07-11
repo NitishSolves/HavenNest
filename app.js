@@ -3,6 +3,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const express = require("express");
+const bodyParser = require("body-parser");
 const app = express();
 const mongoose = require("mongoose");
 const path = require("path");
@@ -23,8 +24,8 @@ const pagesRouter = require("./routes/pages.js");
 
 const dbUrl = process.env.ATLASDB_URL || "mongodb://127.0.0.1:27017/havennest";
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
@@ -74,7 +75,7 @@ app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
 app.use("/", pagesRouter);
 
-app.all(/.*/, (req, res, next) => {
+app.use((req, res, next) => {
   next(new ExpressError(404, "Page not found."));
 });
 

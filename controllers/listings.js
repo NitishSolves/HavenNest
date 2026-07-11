@@ -70,7 +70,7 @@ module.exports.showListing = async (req, res) => {
     listing,
     isFavorited,
     title: `${listing.title} — ${listing.location}, ${listing.country} | HavenNest`,
-    description: listing.description?.slice(0, 155),
+    description: listing.description ? listing.description.slice(0, 155) : "",
   });
 };
 
@@ -99,7 +99,7 @@ module.exports.renderEditForm = async (req, res) => {
     return res.redirect("/listings");
   }
 
-  let originalImageUrl = listing.image?.url || "";
+  let originalImageUrl = listing.image ? listing.image.url : "";
   originalImageUrl = originalImageUrl.replace("/upload", "/upload/w_250");
 
   res.render("listings/edit.ejs", {
