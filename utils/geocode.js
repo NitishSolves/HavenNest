@@ -1,47 +1,50 @@
 /**
- * Geocodes a "location, country" string into { lat, lng } using OpenStreetMap's
- * Nominatim API. No API key required, which keeps this free to run in production.
+ * Geocodes a listing location into { lat, lng } using OpenStreetMap's
+ * Nominatim API. We prioritize the exact text the user typed in the location
+ * field, then fall back to the location + country combination.
  *
- * We geocode once, at create/update time, and persist the result on the listing
- * document (`geometry`). This is deliberate: geocoding on every page view would
- * be slower, would hammer Nominatim's rate limit (1 req/sec, no bulk use), and
- * risks the map silently breaking if the API is briefly unavailable.
- *
- * If geocoding fails (typo'd location, network hiccup, service down), we do NOT
- * block listing creation — we fall back to a null geometry and the show page
- * renders a friendly "map unavailable" state instead of a blank screen.
+ * This keeps the saved coordinates as close as possible to the user's input
+ * while still giving the geocoder a stronger hint when needed.
  */
 
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 
 async function geocodeLocation(location, country) {
-  const query = [location, country].filter(Boolean).join(", ");
-  if (!query) return null;
+  const locationText = typeof location === "string" ? location.trim() : "";
+  const countryText = typeof country === "string" ? country.trim() : "";
 
-  const url = `${NOMINATIM_URL}?q=${encodeURIComponent(query)}&format=json&limit=1`;
+  const queries = [];
+  if (locationText) queries.push(locationText);
+  if (locationText && countryText) queries.push(`${locationText}, ${countryText}`);
+  if (countryText && !locationText) queries.push(countryText);
 
-  try {
-    const response = await fetch(url, {
-      headers: {
-        // Nominatim's usage policy requires a descriptive User-Agent identifying the app.
-        "User-Agent": "HavenNest/1.0 (listing-geocoder)",
-      },
-    });
+  for (const query of queries) {
+    const url = `${NOMINATIM_URL}?q=${encodeURIComponent(query)}&format=json&limit=1`;
 
-    if (!response.ok) return null;
+    try {
+      const response = await fetch(url, {
+        headers: {
+          // Nominatim's usage policy requires a descriptive User-Agent identifying the app.
+          "User-Agent": "HavenNest/1.0 (listing-geocoder)",
+        },
+      });
 
-    const results = await response.json();
-    if (!Array.isArray(results) || results.length === 0) return null;
+      if (!response.ok) continue;
 
-    const { lat, lon } = results[0];
-    return {
-      type: "Point",
-      coordinates: [parseFloat(lon), parseFloat(lat)], // GeoJSON order: [lng, lat]
-    };
-  } catch (err) {
-    console.error("Geocoding failed for query:", query, err.message);
-    return null;
+      const results = await response.json();
+      if (!Array.isArray(results) || results.length === 0) continue;
+
+      const { lat, lon } = results[0];
+      return {
+        type: "Point",
+        coordinates: [parseFloat(lon), parseFloat(lat)], // GeoJSON order: [lng, lat]
+      };
+    } catch (err) {
+      console.error("Geocoding failed for query:", query, err.message);
+    }
   }
+
+  return null;
 }
 
 module.exports = { geocodeLocation };
