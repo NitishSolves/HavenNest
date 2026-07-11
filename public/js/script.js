@@ -21,6 +21,8 @@
   // Precedence: explicit user choice (localStorage) > system preference.
   // Applied as early as possible via an inline script in the layout to avoid
   // a flash of the wrong theme; this handles the toggle interaction itself.
+  // Icon crossfade and thumb sliding are pure CSS, driven off [data-theme] —
+  // this script's only job is to flip the attribute and keep a11y state in sync.
   const THEME_KEY = "havennest-theme";
   const root = document.documentElement;
   const toggleBtn = document.getElementById("theme-toggle");
@@ -28,9 +30,8 @@
   function applyTheme(theme) {
     root.setAttribute("data-theme", theme);
     if (toggleBtn) {
-      toggleBtn.setAttribute("aria-pressed", theme === "dark");
-      const icon = toggleBtn.querySelector("i");
-      if (icon) icon.className = theme === "dark" ? "fa-solid fa-sun" : "fa-solid fa-moon";
+      toggleBtn.setAttribute("aria-checked", theme === "dark");
+      toggleBtn.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
     }
   }
 
@@ -40,7 +41,7 @@
       localStorage.setItem(THEME_KEY, next);
       applyTheme(next);
     });
-    // Sync icon state on load (theme itself is already set by the inline script).
+    // Sync toggle a11y state on load (theme itself is already set by the inline script).
     applyTheme(root.getAttribute("data-theme") || "light");
   }
 
