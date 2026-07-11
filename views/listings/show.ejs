@@ -41,19 +41,34 @@
     <hr>
     <h2 class="h4">Where you'll be</h2>
     <p class="text-muted small mb-2"><%= listing.location %>, <%= listing.country %></p>
-    <% if (listing.geometry && listing.geometry.coordinates && listing.geometry.coordinates.length === 2) { %>
-      <div id="map" role="img" aria-label="Map showing the approximate area of <%= listing.location %>, <%= listing.country %>"></div>
-      <script>
-        (function () {
-          var coords = <%- JSON.stringify(listing.geometry.coordinates) %>; // [lng, lat]
-          var map = L.map("map", { scrollWheelZoom: false }).setView([coords[1], coords[0]], 9);
+    <div id="map" role="img" aria-label="Map showing the location of <%= listing.location %>, <%= listing.country %>"></div>
+    <script>
+      (function () {
+        // The server (controllers/listings.js#showListing) geocodes and
+        // persists geometry for any listing missing it *before* this page
+        // renders, so `coords` should be present for the overwhelming
+        // majority of requests. This client-side branch only exists as a
+        // last-resort fallback for the rare case Nominatim failed both
+        // server-side attempts (rate limit / transient network error) —
+        // it does not duplicate that work on every page load.
+        var coords = <%- JSON.stringify(listing.geometry && listing.geometry.coordinates ? listing.geometry.coordinates : null) %>;
+        var locationText = <%- JSON.stringify(listing.location || "") %>;
+        var countryText = <%- JSON.stringify(listing.country || "") %>;
+
+        // Landmark-level zoom — most listings are a specific address or
+        // point of interest, not a whole city, so 11 (city-level) rendered
+        // an unhelpfully zoomed-out map. 15 reads correctly for both.
+        var LANDMARK_ZOOM = 15;
+
+        function addMap(lat, lng, label) {
+          var map = L.map("map", { scrollWheelZoom: false }).setView([lat, lng], LANDMARK_ZOOM);
 
           L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 18,
           }).addTo(map);
 
-          L.marker([coords[1], coords[0]], {
+          L.marker([lat, lng], {
             icon: L.icon({
               iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
               iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -63,15 +78,40 @@
             }),
           })
             .addTo(map)
-            .bindPopup("Exact location will be provided after booking")
+            .bindPopup(label)
             .openPopup();
-        })();
-      </script>
-    <% } else { %>
-      <div class="map-unavailable">
-        <span><i class="fa-solid fa-map-location-dot me-2" aria-hidden="true"></i>Map unavailable for this listing right now.</span>
-      </div>
-    <% } %>
+        }
+
+        function renderUnavailable() {
+          var mapEl = document.getElementById("map");
+          mapEl.innerHTML = '<div class="map-unavailable"><span><i class="fa-solid fa-map-location-dot me-2" aria-hidden="true"></i>We couldn\'t locate this stay on the map right now. Try refreshing the page.</span></div>';
+        }
+
+        if (Array.isArray(coords) && coords.length === 2) {
+          addMap(coords[1], coords[0], locationText + (countryText ? ", " + countryText : ""));
+          return;
+        }
+
+        var query = [locationText, countryText].filter(Boolean).join(", ");
+        if (!query) {
+          renderUnavailable();
+          return;
+        }
+
+        fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" + encodeURIComponent(query), {
+          headers: { "Accept": "application/json" },
+        })
+          .then(function (res) { return res.ok ? res.json() : []; })
+          .then(function (results) {
+            if (!Array.isArray(results) || !results.length) {
+              renderUnavailable();
+              return;
+            }
+            addMap(parseFloat(results[0].lat), parseFloat(results[0].lon), query);
+          })
+          .catch(renderUnavailable);
+      })();
+    </script>
 
     <div class="mt-5">
       <% if(currUser) { %>
