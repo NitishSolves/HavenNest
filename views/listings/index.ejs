@@ -1,36 +1,66 @@
 <% layout("/layouts/boilerplate"); %>
-<% const hasSearch = typeof searchQuery !== 'undefined' && searchQuery; const hasFilter = typeof activeCategory !== 'undefined' && activeCategory; %>
-<% if (typeof isHome !== 'undefined' && isHome) { %>
-<section class="hero-section">
-  <div class="hero-copy">
-    <p class="eyebrow">Curated stays. Confident bookings.</p>
-    <h1>Find a stay that feels like it was made for your trip.</h1>
-    <p class="hero-lede">HavenNest brings premium homes, cabins, villas, and city escapes into one clean discovery experience.</p>
-    <form class="hero-search" action="/listings" method="GET">
-      <label class="visually-hidden" for="hero-q">Search destination</label>
-      <input id="hero-q" name="q" class="form-control" type="search" placeholder="Try Malibu, Aspen, Bali...">
-      <button class="btn btn-primary-brand">Explore stays</button>
-    </form>
-    <div class="trust-row"><span>Verified hosts</span><span>Flexible escapes</span><span>Design-led homes</span></div>
+
+<% if (!activeCategory && !searchQuery) { %>
+<section class="hero">
+  <span class="hero-eyebrow">Curated stays, worldwide</span>
+  <h1>Find a place that feels like a haven, wherever you land.</h1>
+  <p class="lead">Beachfront cottages, mountain chalets, city lofts, and everything between — booked directly with hosts you can trust.</p>
+
+  <form class="hero-search" action="/listings" method="GET" role="search" aria-label="Search listings">
+    <label for="hero-search-input" class="visually-hidden">Search by city, country, or listing name</label>
+    <input id="hero-search-input" type="search" name="q" placeholder="Try “Tokyo”, “beachfront”, or “Aspen”">
+    <button type="submit">
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Search
+    </button>
+  </form>
+
+  <div class="hero-stats">
+    <div><strong><%= allListings.length %>+</strong><span>Stays live now</span></div>
+    <div><strong><%= categories.length %></strong><span>Trip categories</span></div>
+    <div><strong>24/7</strong><span>Host support</span></div>
   </div>
-  <div class="hero-card"><img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=75" alt="Luxury HavenNest villa"><div class="hero-floating"><b>4.9★ guest favorite</b><span>Premium villa in Tuscany</span></div></div>
 </section>
 <% } %>
 
-<section class="listing-toolbar" aria-labelledby="listing-heading">
-  <div><p class="eyebrow mb-1"><%= hasSearch || hasFilter ? 'Filtered results' : 'Explore homes' %></p><h1 id="listing-heading"><%= hasSearch ? `Stays matching “${searchQuery}”` : (isHome ? 'Featured HavenNest stays' : 'Explore HavenNest stays') %></h1><p class="text-muted"><%= allListings.length %> curated <%= allListings.length === 1 ? 'stay' : 'stays' %> available.</p></div>
-  <form class="compact-filter" action="/listings" method="GET">
-    <label for="category" class="form-label">Travel style</label>
-    <div class="d-flex gap-2"><select id="category" name="category" class="form-select"><option value="">All categories</option><% categories.forEach((category) => { %><option value="<%= category.key %>" <%= activeCategory === category.key ? 'selected' : '' %>><%= category.label %></option><% }) %></select><input type="hidden" name="q" value="<%= searchQuery || '' %>"><button class="btn btn-outline-brand">Apply</button></div>
-  </form>
-</section>
-<nav class="category-rail" aria-label="Listing categories">
-  <a class="category-pill <%= !activeCategory ? 'active' : '' %>" href="/listings<%= searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : '' %>"><i class="fa-solid fa-border-all"></i><span>All</span></a>
-  <% categories.forEach((category) => { const href = `/listings?category=${category.key}${searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : ''}`; %><a class="category-pill <%= activeCategory === category.key ? 'active' : '' %>" href="<%= href %>"><i class="<%= category.icon %>"></i><span><%= category.label %></span></a><% }) %>
+<button type="button" id="filters-toggle-mobile" class="filters-toggle-mobile" aria-expanded="false" aria-controls="filters-bar">
+  <i class="fa-solid fa-sliders" aria-hidden="true"></i> Filter by category
+</button>
+
+<nav class="filters" id="filters-bar" aria-label="Filter listings by category">
+  <a href="/listings<%= searchQuery ? '?q=' + encodeURIComponent(searchQuery) : '' %>"
+     class="filter <%= !activeCategory ? 'active' : '' %>"
+     <%= !activeCategory ? 'aria-current="true"' : '' %>>
+    <i class="fa-solid fa-border-all" aria-hidden="true"></i>
+    <p>All stays</p>
+  </a>
+  <% for (let cat of categories) { %>
+    <a href="/listings?category=<%= cat.value %><%= searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '' %>"
+       class="filter <%= activeCategory === cat.value ? 'active' : '' %>"
+       <%= activeCategory === cat.value ? 'aria-current="true"' : '' %>>
+      <i class="<%= cat.icon %>" aria-hidden="true"></i>
+      <p><%= cat.label %></p>
+    </a>
+  <% } %>
 </nav>
-<% if (allListings.length === 0) { %><div class="empty-state"><h2>No stays found</h2><p>Try a broader city, property name, or travel style.</p><a href="/listings" class="btn btn-primary-brand">Reset search</a></div><% } %>
-<div class="listing-grid">
-<% for(let listing of allListings){ %>
-  <article class="listing-card card"><a href="/listings/<%= listing._id %>" class="listing-link" aria-label="View <%= listing.title %>"><div class="image-wrap"><img src="<%= listing.image && listing.image.url ? listing.image.url : listing.image %>" class="card-img-top" alt="<%= listing.title %> in <%= listing.location %>" loading="lazy"/><button class="favorite-btn" type="button" data-favorite-id="<%= listing._id %>" aria-label="Save <%= listing.title %> to favorites"><i class="fa-regular fa-heart"></i></button></div><div class="card-body"><div><h2><%= listing.title %></h2><p><%= listing.location %>, <%= listing.country %></p></div><p class="price">₹ <%= listing.price ? listing.price.toLocaleString("en-IN") : "N/A" %><span>/night</span></p></div></a></article>
+
+<% if (searchQuery) { %>
+  <p class="mt-3 text-muted">
+    <%= allListings.length %> result<%= allListings.length === 1 ? '' : 's' %> for “<%= searchQuery %>”
+    &middot; <a href="/listings">Clear search</a>
+  </p>
 <% } %>
-</div>
+
+<% if (allListings.length === 0) { %>
+  <div class="empty-state">
+    <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>
+    <h2 class="h5">No stays match that search</h2>
+    <p>Try a different city, or browse all categories.</p>
+    <a href="/listings" class="btn btn-primary-hn mt-2">Browse all stays</a>
+  </div>
+<% } else { %>
+  <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4 mt-1">
+    <% for(let listing of allListings){ %>
+      <%- include("../includes/listing-card.ejs", { listing }) %>
+    <% } %>
+  </div>
+<% } %>

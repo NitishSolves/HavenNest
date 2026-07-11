@@ -1,0 +1,41 @@
+<%
+  const isFav = typeof currUser !== "undefined" && currUser && currUser.favorites &&
+    currUser.favorites.some((favId) => favId.toString() === listing._id.toString());
+%>
+<div class="col">
+  <div class="listing-card-wrap">
+    <a href="/listings/<%= listing._id %>" class="listing-link" aria-label="View <%= listing.title %> in <%= listing.location %>">
+      <div class="card col listing-card">
+        <div class="card-img-wrap">
+          <img
+            src="<%= listing.image && listing.image.url ? listing.image.url : listing.image %>"
+            class="card-img-top"
+            alt="<%= listing.title %>, a stay in <%= listing.location %>, <%= listing.country %>"
+            loading="lazy"
+          />
+          <div class="card-img-overlay"></div>
+        </div>
+        <div class="card-body">
+          <p class="card-text">
+            <b><%= listing.title %></b><br/>
+            <span class="listing-price">&#8377; <%= listing.price ? listing.price.toLocaleString("en-IN") : "N/A" %>/night</span>
+            <i class="tax-info" hidden>&nbsp;&nbsp;+18% GST</i>
+          </p>
+        </div>
+      </div>
+    </a>
+
+    <% if (typeof currUser !== "undefined" && currUser) { %>
+      <form class="favorite-form" method="POST" action="/listings/<%= listing._id %>/favorite">
+        <button
+          type="submit"
+          class="favorite-btn <%= isFav ? 'favorited' : '' %>"
+          aria-pressed="<%= isFav %>"
+          aria-label="<%= isFav ? 'Remove from wishlist' : 'Add to wishlist' %>"
+        >
+          <i class="<%= isFav ? 'fa-solid' : 'fa-regular' %> fa-heart"></i>
+        </button>
+      </form>
+    <% } %>
+  </div>
+</div>

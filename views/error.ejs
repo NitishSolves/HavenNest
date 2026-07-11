@@ -1,1 +1,8 @@
-<% layout("/layouts/boilerplate") %><section class="empty-state"><p class="eyebrow">Something went wrong</p><h1><%= message %></h1><p>Let’s get you back to browsing curated stays.</p><a href="/listings" class="btn btn-primary-brand">Explore listings</a></section>
+<% layout("/layouts/boilerplate") %>
+<div class="row mt-5 mb-5">
+  <div class="col-lg-6 offset-lg-3 text-center">
+    <p class="text-muted mb-1">Error <%= typeof statusCode !== "undefined" ? statusCode : "" %></p>
+    <h1 class="mb-3"><%= message %></h1>
+    <a href="/listings" class="btn btn-primary-hn">Back to HavenNest</a>
+  </div>
+</div>
