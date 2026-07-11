@@ -1,1 +1,32 @@
-<% layout("/layouts/boilerplate") %><div class="auth-page"><h1>Join HavenNest</h1><p class="text-muted">Create an account to host, review, and favorite curated stays.</p><form action="/signup" method="POST" class="needs-validation auth-card" novalidate><label for="username" class="form-label">Username</label><input name="username" id="username" type="text" class="form-control" required><label for="email" class="form-label">Email</label><input name="email" id="email" type="email" class="form-control" required><label for="password" class="form-label">Password</label><input name="password" id="password" type="password" class="form-control" required><button class="btn btn-primary-brand w-100 mt-3">Create account</button></form></div>
+<% layout("/layouts/boilerplate") %>
+
+<div class="row mt-5 mb-5">
+  <div class="col-md-5 offset-md-4">
+    <h1 class="mb-1">Join HavenNest</h1>
+    <p class="text-muted mb-4">Create an account to book stays, save favorites, and list your own place.</p>
+
+    <form action="/signup" method="POST" class="needs-validation surface-card" novalidate>
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input name="username" id="username" type="text" class="form-control" autocomplete="username" required>
+        <div class="valid-feedback">Looks good!</div>
+        <div class="invalid-feedback">Please choose a username.</div>
+      </div>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input name="email" id="email" type="email" class="form-control" autocomplete="email" required>
+        <div class="invalid-feedback">Please enter a valid email.</div>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input name="password" id="password" type="password" class="form-control" autocomplete="new-password" required minlength="8">
+        <div class="invalid-feedback">Password must be at least 8 characters.</div>
+      </div>
+
+      <button class="btn btn-primary-hn w-100" type="submit">Sign up</button>
+      <p class="text-muted small mt-3 mb-0">Already have an account? <a href="/login">Log in</a></p>
+     </form>
+  </div>
+</div>

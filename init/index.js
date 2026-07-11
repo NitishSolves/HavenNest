@@ -1,37 +1,48 @@
-const mongoose = require("mongoose");
-const initData = require("./data.js"); 
-const Listing = require("../models/listing.js");
-
-
-main()
-   .then(() => {
-    console.log("connected to db");
-    initDB(); 
-   })
-   .catch((err) => console.log(err));
-
-async function main() {
-    await mongoose.connect(process.env.ATLASDB_URL || "mongodb://127.0.0.1:27017/havennest");
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
 }
 
-const inferCategory = (listing) => {
-    const text = `${listing.title} ${listing.description} ${listing.location}`.toLowerCase();
-    if (text.includes("castle")) return "castles";
-    if (text.includes("pool") || text.includes("villa")) return "pools";
-    if (text.includes("camp") || text.includes("cabin") || text.includes("treehouse")) return "camping";
-    if (text.includes("mountain") || text.includes("ski") || text.includes("banff") || text.includes("aspen")) return "mountains";
-    if (text.includes("island") || text.includes("beach") || text.includes("boat")) return "boats";
-    if (text.includes("city") || text.includes("downtown") || text.includes("apartment") || text.includes("loft")) return "iconic-cities";
-    return "trending";
-};
+const mongoose = require("mongoose");
+const initData = require("./data.js");
+const Listing = require("../models/listing.js");
+const { geocodeLocation } = require("../utils/geocode.js");
+
+const dbUrl = process.env.ATLASDB_URL || "mongodb://127.0.0.1:27017/havennest";
+
+main()
+  .then(() => {
+    console.log("HavenNest connected to MongoDB");
+    initDB();
+  })
+  .catch((err) => console.error("MongoDB connection error:", err));
+
+async function main() {
+  await mongoose.connect(dbUrl);
+}
 
 const initDB = async () => {
-    await Listing.deleteMany({});
-    initData.data = initData.data.map((obj) =>({
-        ...obj,
-        category: inferCategory(obj),
-        owner: "6a4dcf9a8367a612e024a825"
-    }));
-    await Listing.insertMany(initData.data); 
-    console.log("data was initialized");
+  // SEED_OWNER_ID must be a real User _id in your database (sign up a user first,
+  // then copy their _id from the `users` collection). The previous hardcoded ObjectId
+  // pointed at a user that doesn't exist, which silently broke listing.owner.username
+  // on the show page for every seeded listing.
+  const ownerId = process.env.SEED_OWNER_ID;
+  if (!ownerId) {
+    console.error(
+      "Refusing to seed: set SEED_OWNER_ID in your .env to an existing User _id first."
+    );
+    process.exit(1);
+  }
+
+  await Listing.deleteMany({});
+
+  console.log("Geocoding sample listings — this respects Nominatim's 1 req/sec limit, so it takes a minute...");
+
+  for (const listing of initData.data) {
+    const geometry = await geocodeLocation(listing.location, listing.country);
+    await Listing.create({ ...listing, owner: ownerId, geometry });
+    await new Promise((resolve) => setTimeout(resolve, 1100)); // respect rate limit
+  }
+
+  console.log(`Seeded ${initData.data.length} listings.`);
+  mongoose.connection.close();
 };

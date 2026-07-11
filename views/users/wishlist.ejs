@@ -1,0 +1,21 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="mt-4 mb-3">
+  <h1>Your Wishlist</h1>
+  <p class="text-muted">Stays you've saved for later.</p>
+</div>
+
+<% if (listings.length === 0) { %>
+  <div class="empty-state">
+    <i class="fa-regular fa-heart" aria-hidden="true"></i>
+    <h2 class="h5">Nothing saved yet</h2>
+    <p>Tap the heart on any listing to add it here.</p>
+    <a href="/listings" class="btn btn-primary-hn mt-2">Explore listings</a>
+  </div>
+<% } else { %>
+  <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4">
+    <% for (let listing of listings) { %>
+      <%- include("../includes/listing-card.ejs", { listing }) %>
+    <% } %>
+  </div>
+<% } %>

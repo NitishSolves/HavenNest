@@ -1,36 +1,90 @@
 (() => {
-  'use strict';
-  document.querySelectorAll('.needs-validation').forEach((form) => {
-    form.addEventListener('submit', (event) => {
-      if (!form.checkValidity()) { event.preventDefault(); event.stopPropagation(); }
-      form.classList.add('was-validated');
-    }, false);
+  "use strict";
+
+  // ---- Bootstrap form validation ----------------------------------------
+  const forms = document.querySelectorAll(".needs-validation");
+  Array.from(forms).forEach((form) => {
+    form.addEventListener(
+      "submit",
+      (event) => {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add("was-validated");
+      },
+      false
+    );
   });
 
+  // ---- Dark mode ----------------------------------------------------------
+  // Precedence: explicit user choice (localStorage) > system preference.
+  // Applied as early as possible via an inline script in the layout to avoid
+  // a flash of the wrong theme; this handles the toggle interaction itself.
+  const THEME_KEY = "havennest-theme";
   const root = document.documentElement;
-  const savedTheme = localStorage.getItem('havennest-theme');
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const setTheme = (theme) => { root.dataset.theme = theme; document.querySelectorAll('[data-theme-toggle] i').forEach((icon) => { icon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon'; }); };
-  setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
-  document.querySelectorAll('[data-theme-toggle]').forEach((button) => button.addEventListener('click', () => { const next = root.dataset.theme === 'dark' ? 'light' : 'dark'; localStorage.setItem('havennest-theme', next); setTheme(next); }));
+  const toggleBtn = document.getElementById("theme-toggle");
 
-  const favorites = new Set(JSON.parse(localStorage.getItem('havennest-favorites') || '[]'));
-  const syncFavoriteButtons = () => document.querySelectorAll('[data-favorite-id]').forEach((button) => { const active = favorites.has(button.dataset.favoriteId); button.classList.toggle('is-favorite', active); button.setAttribute('aria-pressed', String(active)); button.querySelector('i').className = active ? 'fa-solid fa-heart' : 'fa-regular fa-heart'; });
-  document.addEventListener('click', (event) => { const button = event.target.closest('[data-favorite-id]'); if (!button) return; event.preventDefault(); event.stopPropagation(); const id = button.dataset.favoriteId; favorites.has(id) ? favorites.delete(id) : favorites.add(id); localStorage.setItem('havennest-favorites', JSON.stringify([...favorites])); syncFavoriteButtons(); });
-  syncFavoriteButtons();
-
-  const mapElement = document.getElementById('map');
-  if (mapElement && window.L) {
-    const location = mapElement.dataset.location;
-    const fallback = [20.5937, 78.9629];
-    const createMap = (coords) => {
-      const map = L.map(mapElement, { scrollWheelZoom: false }).setView(coords, 9);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
-      L.marker(coords).addTo(map).bindPopup('Exact location will be provided after booking').openPopup();
-    };
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(location)}`)
-      .then((response) => response.ok ? response.json() : [])
-      .then((data) => createMap(data && data[0] ? [Number(data[0].lat), Number(data[0].lon)] : fallback))
-      .catch(() => createMap(fallback));
+  function applyTheme(theme) {
+    root.setAttribute("data-theme", theme);
+    if (toggleBtn) {
+      toggleBtn.setAttribute("aria-pressed", theme === "dark");
+      const icon = toggleBtn.querySelector("i");
+      if (icon) icon.className = theme === "dark" ? "fa-solid fa-sun" : "fa-solid fa-moon";
+    }
   }
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+    });
+    // Sync icon state on load (theme itself is already set by the inline script).
+    applyTheme(root.getAttribute("data-theme") || "light");
+  }
+
+  // ---- Mobile filter bar toggle --------------------------------------------
+  const filtersToggle = document.getElementById("filters-toggle-mobile");
+  const filtersBar = document.getElementById("filters-bar");
+  if (filtersToggle && filtersBar) {
+    filtersToggle.addEventListener("click", () => {
+      const isOpen = filtersBar.classList.toggle("open");
+      filtersToggle.setAttribute("aria-expanded", isOpen);
+    });
+  }
+
+  // ---- Wishlist / favorite toggle (AJAX, progressively enhanced) ----------
+  // The button lives inside a <form method="POST"> so it works with JS
+  // disabled (falls back to a full page redirect). With JS on, we intercept
+  // the submit and update the icon in place for a smoother interaction.
+  document.querySelectorAll(".favorite-form").forEach((form) => {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const btn = form.querySelector(".favorite-btn");
+      const icon = btn.querySelector("i");
+
+      try {
+        const res = await fetch(form.action, {
+          method: "POST",
+          headers: { Accept: "application/json" },
+        });
+
+        if (res.status === 401 || res.redirected) {
+          // Not logged in — let the server-driven flow handle the redirect/flash.
+          window.location.href = form.action;
+          return;
+        }
+
+        const data = await res.json();
+        btn.classList.toggle("favorited", data.favorited);
+        btn.setAttribute("aria-pressed", data.favorited);
+        btn.setAttribute("aria-label", data.favorited ? "Remove from wishlist" : "Add to wishlist");
+        icon.className = data.favorited ? "fa-solid fa-heart" : "fa-regular fa-heart";
+      } catch (err) {
+        // Network failure — fall back to a normal form submission.
+        form.submit();
+      }
+    });
+  });
 })();

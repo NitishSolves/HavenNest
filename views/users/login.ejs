@@ -1,1 +1,25 @@
-<% layout("/layouts/boilerplate") %><div class="auth-page"><h1>Log in to HavenNest</h1><p class="text-muted">Save favorite stays and manage your listings.</p><form action="/login" method="POST" class="needs-validation auth-card" novalidate><label for="username" class="form-label">Username</label><input name="username" id="username" type="text" class="form-control" required><label for="password" class="form-label">Password</label><input name="password" id="password" type="password" class="form-control" required><button class="btn btn-primary-brand w-100 mt-3">Log in</button></form></div>
+<% layout("/layouts/boilerplate") %>
+
+<div class="row mt-5 mb-5">
+  <div class="col-md-5 offset-md-4">
+    <h1 class="mb-1">Log in to HavenNest</h1>
+    <p class="text-muted mb-4">Welcome back — your next stay is waiting.</p>
+
+    <form action="/login" method="POST" class="needs-validation surface-card" novalidate>
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input name="username" id="username" type="text" class="form-control" autocomplete="username" required>
+        <div class="invalid-feedback">Please enter your username.</div>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input name="password" id="password" type="password" class="form-control" autocomplete="current-password" required>
+        <div class="invalid-feedback">Please enter your password.</div>
+      </div>
+
+      <button class="btn btn-primary-hn w-100" type="submit">Log in</button>
+      <p class="text-muted small mt-3 mb-0">New to HavenNest? <a href="/signup">Create an account</a></p>
+     </form>
+  </div>
+</div>
