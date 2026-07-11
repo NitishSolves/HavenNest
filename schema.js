@@ -1,11 +1,13 @@
 const Joi = require('joi');
+const { listingCategories } = require('./models/listing.js');
 
 module.exports.listingSchema = Joi.object({
     listing : Joi.object({
-        title: Joi.string().required(),
-        description: Joi.string().required(),
-        location: Joi.string().required(),
-        country: Joi.string().required(),
+        title: Joi.string().trim().required(),
+        description: Joi.string().trim().required(),
+        location: Joi.string().trim().required(),
+        country: Joi.string().trim().required(),
+        category: Joi.string().valid(...listingCategories.map((category) => category.key)).required(),
         price: Joi.number().required().min(0),
         image: Joi.string().allow("", null),
     }).required(),

@@ -1,126 +1,36 @@
 <% layout("/layouts/boilerplate"); %>
+<% const hasSearch = typeof searchQuery !== 'undefined' && searchQuery; const hasFilter = typeof activeCategory !== 'undefined' && activeCategory; %>
+<% if (typeof isHome !== 'undefined' && isHome) { %>
+<section class="hero-section">
+  <div class="hero-copy">
+    <p class="eyebrow">Curated stays. Confident bookings.</p>
+    <h1>Find a stay that feels like it was made for your trip.</h1>
+    <p class="hero-lede">HavenNest brings premium homes, cabins, villas, and city escapes into one clean discovery experience.</p>
+    <form class="hero-search" action="/listings" method="GET">
+      <label class="visually-hidden" for="hero-q">Search destination</label>
+      <input id="hero-q" name="q" class="form-control" type="search" placeholder="Try Malibu, Aspen, Bali...">
+      <button class="btn btn-primary-brand">Explore stays</button>
+    </form>
+    <div class="trust-row"><span>Verified hosts</span><span>Flexible escapes</span><span>Design-led homes</span></div>
+  </div>
+  <div class="hero-card"><img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=75" alt="Luxury HavenNest villa"><div class="hero-floating"><b>4.9★ guest favorite</b><span>Premium villa in Tuscany</span></div></div>
+</section>
+<% } %>
 
-
-<!-- <h3>All Listings</h3> -->
-<!-- <form method="GET" action="/listings/new">
-    <button>Create New Listing</button>
-</form> -->
-<style>
-.filters{
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-}
-.filter{
-  text-align: center;
-  margin-right: 2rem;
-  margin-top: 2rem;
-  opacity:0.7;
-}
-.filter:hover{
-  opacity:1;
-  cursor:pointer;
-}
-.filter p{
-  font-size: 0.8rem;
-}
-.tax-info{
-  display: none;
-}
-.tax-toggle{
-  border:1px solid black;
-  border-radius: 1rem;
-  height:3.25rem;
-  padding:1rem;
-  margin-left: 2rem;
-  display: flex;
-  align-items: center;
-}
-</style>
-
-   <div class="filters ">
-
-    <div class="filter">
-      <div><i class="fa-solid fa-fire"></i></div>
-      <p>Trending</p>
-    </div>
-
-    <div class="filter">
-      <div><i class="fa-solid fa-bed"></i></div>
-      <p>Rooms</p>
-    </div>
-    <div class="filter">
-      <div><i class="fa-solid fa-mountain-city"></i></div>
-      <p>Iconic Cities</p>
-    </div>
-    <div class="filter">
-      <div><i class="fa-solid fa-mountain"></i></div>
-      <p>Mountains</p>
-    </div>
-    <div class="filter">
-      <div><i class="fa-solid fa-fort-awesome"></i></div>
-      <p>Castles</p>
-    </div>
-    <div class="filter">
-      <div><i class="fa-solid fa-person-swimming"></i></div>
-      <p>Amazing Pools</p>
-    </div>
-    <div class="filter">
-      <div><i class="fa-solid fa-campground"></i></div>
-      <p>Camping</p>
-    </div>
-    <div class="filter">
-      <div><i class="fa-solid fa-cow"></i></div>
-      <p>Farms</p>
-    </div>
-    <div class="filter">
-      <div><i class="fa-regular fa-snowflake"></i></div>
-      <p>Arctic</p>
-    </div>
-    <div class="filter">
-      <div><i class="fa-solid fa-igloo"></i></div>
-      <p>Domes</p>
-    </div>
-    <div class="filter">
-      <div><i class="fa-solid fa-ship"></i></div>
-      <p>Boats</p>
-    </div>
-
-    <div class="tax-toggle">
-      <div class="form-check-reverse form-switch">
-        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
-        <label class="form-check-label" for="flexSwitchCheckDefault">Display total after taxes</label>
-      </div>
-    </div>
-   </div>
-<div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
+<section class="listing-toolbar" aria-labelledby="listing-heading">
+  <div><p class="eyebrow mb-1"><%= hasSearch || hasFilter ? 'Filtered results' : 'Explore homes' %></p><h1 id="listing-heading"><%= hasSearch ? `Stays matching “${searchQuery}”` : (isHome ? 'Featured HavenNest stays' : 'Explore HavenNest stays') %></h1><p class="text-muted"><%= allListings.length %> curated <%= allListings.length === 1 ? 'stay' : 'stays' %> available.</p></div>
+  <form class="compact-filter" action="/listings" method="GET">
+    <label for="category" class="form-label">Travel style</label>
+    <div class="d-flex gap-2"><select id="category" name="category" class="form-select"><option value="">All categories</option><% categories.forEach((category) => { %><option value="<%= category.key %>" <%= activeCategory === category.key ? 'selected' : '' %>><%= category.label %></option><% }) %></select><input type="hidden" name="q" value="<%= searchQuery || '' %>"><button class="btn btn-outline-brand">Apply</button></div>
+  </form>
+</section>
+<nav class="category-rail" aria-label="Listing categories">
+  <a class="category-pill <%= !activeCategory ? 'active' : '' %>" href="/listings<%= searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : '' %>"><i class="fa-solid fa-border-all"></i><span>All</span></a>
+  <% categories.forEach((category) => { const href = `/listings?category=${category.key}${searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : ''}`; %><a class="category-pill <%= activeCategory === category.key ? 'active' : '' %>" href="<%= href %>"><i class="<%= category.icon %>"></i><span><%= category.label %></span></a><% }) %>
+</nav>
+<% if (allListings.length === 0) { %><div class="empty-state"><h2>No stays found</h2><p>Try a broader city, property name, or travel style.</p><a href="/listings" class="btn btn-primary-brand">Reset search</a></div><% } %>
+<div class="listing-grid">
 <% for(let listing of allListings){ %>
-  <a href="/listings/<%= listing._id %>" class="listing-link">
-    <div class="card col listing-card">
-      <img src="<%= listing.image && listing.image.url ? listing.image.url : listing.image %>" class="card-img-top" alt="listing_image" style="height:20rem"/>
-      <div class="card-img-overlay"></div>
-      <div class="card-body">
-        <p class="card-text">
-         <b> <%= listing.title %></b><br/>
-          &#8377; <%= listing.price ? listing.price.toLocaleString("en-IN") : "N/A" %>/night
-          <i class="tax-info">&nbsp; &nbsp;+18% GST</i>
-        </p>
-      </div>
-    </div>
-  </a>
+  <article class="listing-card card"><a href="/listings/<%= listing._id %>" class="listing-link" aria-label="View <%= listing.title %>"><div class="image-wrap"><img src="<%= listing.image && listing.image.url ? listing.image.url : listing.image %>" class="card-img-top" alt="<%= listing.title %> in <%= listing.location %>" loading="lazy"/><button class="favorite-btn" type="button" data-favorite-id="<%= listing._id %>" aria-label="Save <%= listing.title %> to favorites"><i class="fa-regular fa-heart"></i></button></div><div class="card-body"><div><h2><%= listing.title %></h2><p><%= listing.location %>, <%= listing.country %></p></div><p class="price">₹ <%= listing.price ? listing.price.toLocaleString("en-IN") : "N/A" %><span>/night</span></p></div></a></article>
 <% } %>
 </div>
-
-<script>
-  let taxSwitch = document.getElementById("flexSwitchCheckDefault");
-  taxSwitch.addEventListener("click", () =>{
-     let taxInfo = document.getElementsByClassName("tax-info");
-     for(info of taxInfo){
-      if(info.style.display != "inline"){
-      info.style.display = "inline";
-      }else {
-        info.style.display= "none";
-      }
-     }
-  });
-</script>

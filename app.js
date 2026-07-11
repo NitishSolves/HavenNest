@@ -17,9 +17,10 @@ const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
 
 const listingRouter = require("./routes/listing.js");
+const listingController = require("./controllers/listings.js");
+const wrapAsync = require("./utils/wrapAsync.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
-const { truncate } = require("fs");
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
@@ -34,7 +35,7 @@ main()
    .catch((err) => console.log(err));
 
 async function main() {
-    await mongoose.connect("mongodb://127.0.0.1:27017/wanderlust", {
+    await mongoose.connect(process.env.ATLASDB_URL || "mongodb://127.0.0.1:27017/havennest", {
         useNewUrlParser: true,
         useUnifiedTopology: true
     });
@@ -45,7 +46,7 @@ app.set("views", path.join(__dirname, "views"));
 app.use(methodOverride("._method"));
 
 const sessionOptions = {
-    secret: "mysupersecretcode",
+    secret: process.env.SECRET || "havennest-dev-secret",
     resave: false,
     saveUninitialized: true,
     cookie:{
@@ -54,10 +55,6 @@ const sessionOptions = {
         httpOnly: true,
     },
 };
-
-// app.get("/", (req, res) => {
-//     res.send("Hi, im root");
-// });
 
 app.use(session(sessionOptions));
 app.use(flash());
@@ -76,6 +73,7 @@ app.use((req, res, next) =>{
     next();
 });
 
+app.get("/", wrapAsync(listingController.home));
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
