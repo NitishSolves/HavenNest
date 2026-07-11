@@ -44,6 +44,7 @@
     <div id="map" role="img" aria-label="Map showing the location of <%= listing.location %>, <%= listing.country %>"></div>
     <script>
       (function () {
+<<<<<<< HEAD
         // The server (controllers/listings.js#showListing) geocodes and
         // persists geometry for any listing missing it *before* this page
         // renders, so `coords` should be present for the overwhelming
@@ -51,10 +52,13 @@
         // last-resort fallback for the rare case Nominatim failed both
         // server-side attempts (rate limit / transient network error) —
         // it does not duplicate that work on every page load.
+=======
+>>>>>>> origin/main
         var coords = <%- JSON.stringify(listing.geometry && listing.geometry.coordinates ? listing.geometry.coordinates : null) %>;
         var locationText = <%- JSON.stringify(listing.location || "") %>;
         var countryText = <%- JSON.stringify(listing.country || "") %>;
 
+<<<<<<< HEAD
         // Landmark-level zoom — most listings are a specific address or
         // point of interest, not a whole city, so 11 (city-level) rendered
         // an unhelpfully zoomed-out map. 15 reads correctly for both.
@@ -62,6 +66,10 @@
 
         function addMap(lat, lng, label) {
           var map = L.map("map", { scrollWheelZoom: false }).setView([lat, lng], LANDMARK_ZOOM);
+=======
+        function addMap(lat, lng, label) {
+          var map = L.map("map", { scrollWheelZoom: false }).setView([lat, lng], 11);
+>>>>>>> origin/main
 
           L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -84,7 +92,11 @@
 
         function renderUnavailable() {
           var mapEl = document.getElementById("map");
+<<<<<<< HEAD
           mapEl.innerHTML = '<div class="map-unavailable"><span><i class="fa-solid fa-map-location-dot me-2" aria-hidden="true"></i>We couldn\'t locate this stay on the map right now. Try refreshing the page.</span></div>';
+=======
+          mapEl.innerHTML = '<div class="map-unavailable"><span><i class="fa-solid fa-map-location-dot me-2" aria-hidden="true"></i>Map unavailable for this listing right now.</span></div>';
+>>>>>>> origin/main
         }
 
         if (Array.isArray(coords) && coords.length === 2) {
@@ -99,7 +111,10 @@
         }
 
         fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" + encodeURIComponent(query), {
-          headers: { "Accept": "application/json" },
+          headers: {
+            "Accept": "application/json"
+          }
+>>>>>>> origin/main
         })
           .then(function (res) { return res.ok ? res.json() : []; })
           .then(function (results) {
@@ -107,7 +122,6 @@
               renderUnavailable();
               return;
             }
-            addMap(parseFloat(results[0].lat), parseFloat(results[0].lon), query);
           })
           .catch(renderUnavailable);
       })();

@@ -62,6 +62,14 @@ module.exports.showListing = async (req, res) => {
     return res.redirect("/listings");
   }
 
+  if (!listing.geometry || !Array.isArray(listing.geometry.coordinates) || listing.geometry.coordinates.length !== 2) {
+    const geometry = await geocodeLocation(listing.location, listing.country);
+    if (geometry) {
+      listing.geometry = geometry;
+      await listing.save();
+    }
+  }
+
   const isFavorited = Boolean(
     req.user && req.user.favorites && req.user.favorites.some((favId) => favId.equals(listing._id))
   );
