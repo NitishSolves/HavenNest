@@ -1,26 +1,41 @@
 <style>
-  .search-btn{
-    background-color: var(--hn-teal-600);
-    color:#fff;
-    border-radius: 25px;
-    padding: 0 1.1rem;
-    border: none;
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
   }
-  .search-btn:hover{
-    background-color: var(--hn-teal-700);
-    color:#fff;
-  }
-  .search-btn i{
-    display: inline;
-    margin-right:0.4rem;
-  }
-  .search-inp{
-    border-radius: 25px;
-    padding: 0.5rem 1.25rem;
-    font-size: 1rem;
+
+  .theme-toggle {
+    appearance: none;
     border: 1px solid var(--border);
-    background-color: var(--bg-elevated);
+    background: linear-gradient(180deg, var(--bg-elevated), rgba(31, 111, 92, 0.06));
     color: var(--text);
+    border-radius: 999px;
+    width: 2.8rem;
+    height: 2.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+    padding: 0;
+  }
+
+  .theme-toggle:hover {
+    background: linear-gradient(180deg, var(--hn-teal-100), var(--bg-elevated));
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-1px);
+  }
+
+  .theme-toggle:active {
+    transform: translateY(0);
+  }
+
+  .theme-toggle i {
+    font-size: 1rem;
+    line-height: 1;
   }
 </style>
 
@@ -36,16 +51,9 @@
         <div class="navbar-nav">
           <a class="nav-link" href="/listings">Explore</a>
         </div>
-        <div class="navbar-nav ms-auto flex-grow-1 flex-md-grow-0">
-            <form class="d-flex" role="search" action="/listings" method="GET" aria-label="Search listings">
-                <label for="nav-search" class="visually-hidden">Search by city or listing name</label>
-                <input class="form-control me-2 search-inp" id="nav-search" name="q" type="search" placeholder="Search destinations" value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>" aria-label="Search"/>
-                <button class="btn search-btn" type="submit"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span class="d-none d-sm-inline">Search</span></button>
-              </form>
-        </div>
 
-        <div class="navbar-nav ms-md-3 align-items-md-center">
-          <a class="nav-link" href="/listings/new">HavenNest your home</a>
+        <div class="navbar-nav ms-md-3 align-items-md-center nav-actions ms-auto">
+          <a class="nav-link fw-semibold" href="/listings/new">Create a HavenNest</a>
           <% if(currUser) { %>
             <a class="nav-link" href="/wishlist"><i class="fa-solid fa-heart" aria-hidden="true"></i> Wishlist</a>
           <% } %>
