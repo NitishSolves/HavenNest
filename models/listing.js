@@ -2,11 +2,6 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Review = require("./reviews.js");
 
-// Single source of truth for filter categories. Used by:
-// - schema.js (Joi validation)
-// - views/listings/new.ejs & edit.ejs (the <select>)
-// - views/listings/index.ejs (the filter bar)
-// Keep the `icon` in sync with Font Awesome classes already loaded in the app.
 const CATEGORIES = [
   { value: "trending", label: "Trending", icon: "fa-solid fa-fire" },
   { value: "rooms", label: "Rooms", icon: "fa-solid fa-bed" },
@@ -56,8 +51,6 @@ const listingSchema = new Schema({
     enum: CATEGORIES.map((c) => c.value),
     default: "trending",
   },
-  // GeoJSON point, populated server-side by utils/geocode.js at create/update time.
-  // Nullable on purpose: geocoding failures must never block listing creation.
   geometry: {
     type: {
       type: String,

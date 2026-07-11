@@ -1,7 +1,6 @@
 (() => {
   "use strict";
 
-  // ---- Bootstrap form validation ----------------------------------------
   const forms = document.querySelectorAll(".needs-validation");
   Array.from(forms).forEach((form) => {
     form.addEventListener(
@@ -17,12 +16,6 @@
     );
   });
 
-  // ---- Dark mode ----------------------------------------------------------
-  // Precedence: explicit user choice (localStorage) > system preference.
-  // Applied as early as possible via an inline script in the layout to avoid
-  // a flash of the wrong theme; this handles the toggle interaction itself.
-  // Icon crossfade and thumb sliding are pure CSS, driven off [data-theme] —
-  // this script's only job is to flip the attribute and keep a11y state in sync.
   const THEME_KEY = "havennest-theme";
   const root = document.documentElement;
   const toggleBtn = document.getElementById("theme-toggle");
@@ -41,11 +34,9 @@
       localStorage.setItem(THEME_KEY, next);
       applyTheme(next);
     });
-    // Sync toggle a11y state on load (theme itself is already set by the inline script).
     applyTheme(root.getAttribute("data-theme") || "light");
   }
 
-  // ---- Mobile filter bar toggle --------------------------------------------
   const filtersToggle = document.getElementById("filters-toggle-mobile");
   const filtersBar = document.getElementById("filters-bar");
   if (filtersToggle && filtersBar) {
@@ -55,10 +46,6 @@
     });
   }
 
-  // ---- Wishlist / favorite toggle (AJAX, progressively enhanced) ----------
-  // The button lives inside a <form method="POST"> so it works with JS
-  // disabled (falls back to a full page redirect). With JS on, we intercept
-  // the submit and update the icon in place for a smoother interaction.
   document.querySelectorAll(".favorite-form").forEach((form) => {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -72,7 +59,6 @@
         });
 
         if (res.status === 401 || res.redirected) {
-          // Not logged in — let the server-driven flow handle the redirect/flash.
           window.location.href = form.action;
           return;
         }
@@ -83,7 +69,6 @@
         btn.setAttribute("aria-label", data.favorited ? "Remove from wishlist" : "Add to wishlist");
         icon.className = data.favorited ? "fa-solid fa-heart" : "fa-regular fa-heart";
       } catch (err) {
-        // Network failure — fall back to a normal form submission.
         form.submit();
       }
     });

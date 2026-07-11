@@ -11,9 +11,6 @@ module.exports.index = async (req, res) => {
   }
 
   if (q && q.trim()) {
-    // Search by title, location, or country — case-insensitive.
-    // A regex is fine at this catalog size; if the listing count grows into the
-    // thousands, swap this for a MongoDB text index ($text) instead.
     const searchTerm = q.trim();
     filter.$or = [
       { title: { $regex: searchTerm, $options: "i" } },
@@ -154,8 +151,6 @@ module.exports.destroyListing = async (req, res) => {
   res.redirect("/listings");
 };
 
-// Toggles a listing in the current user's wishlist. Idempotent per click,
-// returns JSON so the card's heart icon can update without a full page reload.
 module.exports.toggleFavorite = async (req, res) => {
   const { id } = req.params;
   const user = req.user;

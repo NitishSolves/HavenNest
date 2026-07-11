@@ -1,23 +1,4 @@
-/**
- * Geocodes a listing location into { lat, lng } using OpenStreetMap's
-<<<<<<< HEAD
- * Nominatim API.
- *
- * Query order matters here: we try the MOST specific query first
- * ("location, country") and only fall back to the bare location text if
- * that yields no results at all. Ambiguous place names (Paris, Springfield,
- * Cambridge, Georgia...) will almost always return *something* for the bare
- * query, so a "try bare text first, fall back on failure" strategy silently
- * geocodes to the wrong country and never triggers the fallback. Leading
- * with the qualified query avoids that class of bug entirely.
-=======
- * Nominatim API. We prioritize the exact text the user typed in the location
- * field, then fall back to the location + country combination.
- *
- * This keeps the saved coordinates as close as possible to the user's input
- * while still giving the geocoder a stronger hint when needed.
->>>>>>> origin/main
- */
+const fetch = require("node-fetch");
 
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 
@@ -36,7 +17,6 @@ async function geocodeLocation(location, country) {
     try {
       const response = await fetch(url, {
         headers: {
-          // Nominatim's usage policy requires a descriptive User-Agent identifying the app.
           "User-Agent": "HavenNest/1.0 (listing-geocoder)",
         },
       });
@@ -49,7 +29,7 @@ async function geocodeLocation(location, country) {
       const { lat, lon } = results[0];
       return {
         type: "Point",
-        coordinates: [parseFloat(lon), parseFloat(lat)], // GeoJSON order: [lng, lat]
+        coordinates: [parseFloat(lon), parseFloat(lat)],
       };
     } catch (err) {
       console.error("Geocoding failed for query:", query, err.message);

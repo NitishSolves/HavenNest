@@ -1,10 +1,8 @@
 <nav class="navbar navbar-expand-md sticky-top" aria-label="Main navigation">
   <div class="container-fluid">
-
     <a class="navbar-brand" href="/listings">
       <i class="fa-regular fa-compass" aria-hidden="true"></i> HavenNest
     </a>
-
     <button
       class="navbar-toggler"
       type="button"
@@ -16,27 +14,21 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
-
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-
-      <!-- Left Side -->
+      
       <div class="navbar-nav">
         <a class="nav-link" href="/listings">Explore</a>
       </div>
-
-      <!-- Right Side -->
+      
       <div class="navbar-nav ms-auto align-items-md-center">
-
         <% if (currUser) { %>
           <a class="nav-link" href="/wishlist">
             <i class="fa-solid fa-heart"></i> Wishlist
           </a>
         <% } %>
-
         <a class="nav-link fw-semibold" href="/listings/new">
           Create a HavenNest
         </a>
-
         <% if (currUser) { %>
           <a class="nav-link" href="/logout">
             Log out
@@ -45,14 +37,11 @@
           <a class="nav-link" href="/signup">
             <b>Sign up</b>
           </a>
-
           <a class="nav-link" href="/login">
             <b>Log in</b>
           </a>
         <% } %>
-
       </div>
-
     </div>
   </div>
 </nav>

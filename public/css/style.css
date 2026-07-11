@@ -1,9 +1,3 @@
-/* ==========================================================================
-   HavenNest Design Tokens
-   Palette chosen deliberately for a hospitality/travel brand — not the
-   generic cream+terracotta AI-default. "Haven teal" reads calm and premium,
-   "amber" gives warm, appetite-driving contrast for CTAs and price tags.
-   ========================================================================== */
 :root {
   --hn-teal-900: #0f2e29;
   --hn-teal-700: #17493f;
@@ -68,7 +62,6 @@ a {
   color: inherit;
 }
 
-/* Focus visibility — required for keyboard users, never remove */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
@@ -80,9 +73,6 @@ select:focus-visible,
   border-radius: var(--radius-sm);
 }
 
-/* ==========================================================================
-   Navbar
-   ========================================================================== */
 .navbar {
   min-height: 5rem;
   background-color: var(--bg-elevated) !important;
@@ -111,99 +101,6 @@ select:focus-visible,
   flex-wrap: wrap;
 }
 
-/* ==========================================================================
-   Theme toggle — sliding pill switch, matches brand palette instead of a
-   generic circular icon button. Icon crossfade + thumb travel are pure CSS,
-   driven by [data-theme] on <html>; script.js only flips that attribute.
-   ========================================================================== */
-.theme-toggle {
-  --toggle-w: 3.4rem;
-  --toggle-h: 1.9rem;
-  appearance: none;
-  border: none;
-  background: none;
-  padding: 0.2rem;
-  margin: 0;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  flex-shrink: 0;
-}
-.theme-toggle-track {
-  position: relative;
-  width: var(--toggle-w);
-  height: var(--toggle-h);
-  border-radius: 999px;
-  background: linear-gradient(180deg, var(--hn-teal-700), var(--hn-teal-900));
-  border: 1px solid var(--border);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
-  display: flex;
-  align-items: center;
-  padding: 0.16rem;
-}
-[data-theme="dark"] .theme-toggle-track {
-  background: linear-gradient(180deg, var(--hn-teal-600), var(--hn-teal-900));
-}
-.theme-toggle-thumb {
-  width: calc(var(--toggle-h) - 0.32rem);
-  height: calc(var(--toggle-h) - 0.32rem);
-  border-radius: 50%;
-  background: var(--hn-amber-500);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  transform: translateX(0);
-  transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
-}
-[data-theme="dark"] .theme-toggle-thumb {
-  transform: translateX(calc(var(--toggle-w) - var(--toggle-h)));
-  background: var(--hn-teal-100);
-}
-.theme-icon {
-  position: absolute;
-  font-size: 0.65rem;
-  color: var(--hn-ink);
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-.theme-icon-sun {
-  opacity: 1;
-  transform: scale(1) rotate(0deg);
-}
-.theme-icon-moon {
-  opacity: 0;
-  transform: scale(0.4) rotate(-90deg);
-}
-[data-theme="dark"] .theme-icon-sun {
-  opacity: 0;
-  transform: scale(0.4) rotate(90deg);
-}
-[data-theme="dark"] .theme-icon-moon {
-  opacity: 1;
-  transform: scale(1) rotate(0deg);
-  color: var(--hn-teal-700);
-}
-.theme-toggle:hover .theme-toggle-track {
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25), 0 0 0 3px rgba(232, 163, 61, 0.18);
-}
-.theme-toggle:focus-visible {
-  outline: none;
-}
-.theme-toggle:focus-visible .theme-toggle-track {
-  box-shadow: var(--focus-ring);
-}
-@media (max-width: 576px) {
-  .theme-toggle {
-    --toggle-w: 3.1rem;
-    --toggle-h: 1.75rem;
-  }
-}
-
-/* ==========================================================================
-   Hero (homepage)
-   ========================================================================== */
 .hero {
   background: linear-gradient(155deg, var(--hn-teal-900), var(--hn-teal-700));
   color: #f4f8f6;
@@ -286,9 +183,6 @@ select:focus-visible,
   font-size: 0.85rem;
 }
 
-/* ==========================================================================
-   Filters
-   ========================================================================== */
 .filters {
   display: flex;
   flex-wrap: nowrap;
@@ -356,9 +250,6 @@ select:focus-visible,
   }
 }
 
-/* ==========================================================================
-   Listing cards
-   ========================================================================== */
 .listing-card-wrap {
   position: relative;
   display: block;
@@ -410,7 +301,6 @@ select:focus-visible,
   opacity: 1;
 }
 
-/* Favorite / wishlist heart — lives in the corner of the card image */
 .favorite-btn {
   position: absolute;
   top: 0.75rem;
@@ -513,9 +403,6 @@ select:focus-visible,
   font-size: 0.85rem;
 }
 
-/* ==========================================================================
-   Empty states
-   ========================================================================== */
 .empty-state {
   text-align: center;
   padding: 4rem 1rem;
@@ -527,9 +414,6 @@ select:focus-visible,
   margin-bottom: 1rem;
 }
 
-/* ==========================================================================
-   Cards (auth, generic elevated surfaces)
-   ========================================================================== */
 .surface-card {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -549,9 +433,6 @@ select:focus-visible,
   box-shadow: var(--focus-ring);
 }
 
-/* ==========================================================================
-   Footer
-   ========================================================================== */
 .f-info-links a {
   text-decoration: none;
   color: var(--text);
@@ -593,9 +474,6 @@ select:focus-visible,
   gap: 0.5rem;
 }
 
-/* ==========================================================================
-   Reduced motion
-   ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;

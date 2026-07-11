@@ -36,9 +36,14 @@ main()
   .then(() => console.log("HavenNest connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-async function main() {
-  await mongoose.connect(dbUrl);
-}
+  async function main() {
+    await mongoose.connect(dbUrl, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+    });
+  }
 
 const sessionOptions = {
   secret: process.env.SECRET || "havennest-dev-secret-change-me",

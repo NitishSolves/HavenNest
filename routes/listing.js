@@ -6,29 +6,24 @@ const listingController = require("../controllers/listings.js");
 const multer = require("multer");
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB — keep uploads reasonable
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = ["image/png", "image/jpeg"];
     cb(null, allowed.includes(file.mimetype));
   },
 });
 
-// Index (supports ?q= and ?category= for search/filter) & Create
 router
   .route("/")
   .get(wrapAsync(listingController.index))
   .post(isLoggedIn, upload.single("listing[image]"), validateListing, wrapAsync(listingController.createListing));
 
-// New
 router.get("/new", isLoggedIn, listingController.renderNewForm);
 
-// Edit
 router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(listingController.renderEditForm));
 
-// Wishlist toggle
 router.post("/:id/favorite", isLoggedIn, wrapAsync(listingController.toggleFavorite));
 
-// Show, Update & Delete
 router
   .route("/:id")
   .get(wrapAsync(listingController.showListing))

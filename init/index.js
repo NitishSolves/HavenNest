@@ -16,15 +16,16 @@ main()
   })
   .catch((err) => console.error("MongoDB connection error:", err));
 
-async function main() {
-  await mongoose.connect(dbUrl);
-}
+  async function main() {
+    await mongoose.connect(dbUrl, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useCreateIndex: true,
+      useFindAndModify: false,
+    });
+  }
 
 const initDB = async () => {
-  // SEED_OWNER_ID must be a real User _id in your database (sign up a user first,
-  // then copy their _id from the `users` collection). The previous hardcoded ObjectId
-  // pointed at a user that doesn't exist, which silently broke listing.owner.username
-  // on the show page for every seeded listing.
   const ownerId = process.env.SEED_OWNER_ID;
   if (!ownerId) {
     console.error(
@@ -40,7 +41,7 @@ const initDB = async () => {
   for (const listing of initData.data) {
     const geometry = await geocodeLocation(listing.location, listing.country);
     await Listing.create({ ...listing, owner: ownerId, geometry });
-    await new Promise((resolve) => setTimeout(resolve, 1100)); // respect rate limit
+    await new Promise((resolve) => setTimeout(resolve, 1100));
   }
 
   console.log(`Seeded ${initData.data.length} listings.`);

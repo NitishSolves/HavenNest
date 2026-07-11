@@ -1,13 +1,3 @@
-/**
- * One-time migration: backfills `geometry` for existing Listing documents
- * that predate the geocoding feature (or whose geocode previously failed).
- *
- * Safe to run multiple times — it only touches listings with missing or
- * malformed geometry, never overwrites a listing that already has valid
- * coordinates, and never deletes/recreates anything.
- *
- * Usage: npm run backfill-geo
- */
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -28,19 +18,28 @@ function hasValidGeometry(listing) {
 }
 
 async function run() {
-  await mongoose.connect(dbUrl);
+  await mongoose.connect(dbUrl, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+  });
   console.log("Connected to MongoDB for geometry backfill.");
 
   const listings = await Listing.find({});
   const toFix = listings.filter((l) => !hasValidGeometry(l));
 
   if (toFix.length === 0) {
-    console.log("Nothing to backfill — every listing already has valid geometry.");
+    console.log(
+      "Nothing to backfill — every listing already has valid geometry."
+    );
     await mongoose.connection.close();
     return;
   }
 
-  console.log(`Backfilling geometry for ${toFix.length} listing(s). Respecting Nominatim's 1 req/sec limit...`);
+  console.log(
+    `Backfilling geometry for ${toFix.length} listing(s). Respecting Nominatim's 1 req/sec limit...`
+  );
 
   let succeeded = 0;
   let failed = 0;
@@ -52,16 +51,22 @@ async function run() {
       listing.geometry = geometry;
       await listing.save();
       succeeded++;
-      console.log(`  ✓ ${listing.title} — ${listing.location}, ${listing.country}`);
+      console.log(
+        `  ✓ ${listing.title} — ${listing.location}, ${listing.country}`
+      );
     } else {
       failed++;
-      console.warn(`  ✗ ${listing.title} — could not geocode "${listing.location}, ${listing.country}"`);
+      console.warn(
+        `  ✗ ${listing.title} — could not geocode "${listing.location}, ${listing.country}"`
+      );
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 1100)); // respect rate limit
+    await new Promise((resolve) => setTimeout(resolve, 1100));
   }
 
-  console.log(`Backfill complete: ${succeeded} succeeded, ${failed} failed (will retry on-demand when viewed).`);
+  console.log(
+    `Backfill complete: ${succeeded} succeeded, ${failed} failed (will retry on-demand when viewed).`
+  );
   await mongoose.connection.close();
 }
 
