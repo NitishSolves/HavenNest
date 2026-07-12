@@ -10,6 +10,7 @@ const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const session = require("express-session");
+const MongoStore = require("connect-mongo")(session);
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
@@ -22,7 +23,7 @@ const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 const pagesRouter = require("./routes/pages.js");
 
-const dbUrl = process.env.ATLASDB_URL || "mongodb://127.0.0.1:27017/havennest";
+const dbUrl = process.env.ATLASDB_URL;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -44,9 +45,18 @@ main()
       useFindAndModify: false,
     });
   }
+  const store = new MongoStore({
+    url: dbUrl,
+    touchAfter: 24 * 3600,
+  });
+
+  store.on("error", function (error) {
+    console.log("ERROR in MONGO SESSION STORE", error);
+  });
 
 const sessionOptions = {
-  secret: process.env.SECRET || "havennest-dev-secret-change-me",
+  store,
+  secret: process.env.SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -89,7 +99,7 @@ app.use((err, req, res, next) => {
   res.status(statusCode).render("error.ejs", { message, statusCode });
 });
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`HavenNest is listening on port ${port}`);
 });

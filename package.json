@@ -4,7 +4,7 @@
   "description": "HavenNest — find your next stay.",
   "main": "app.js",
   "engines": {
-    "node": ">=12.0.0"
+    "node": "16.13.0"
   },
   "scripts": {
     "start": "node app.js",
@@ -19,6 +19,7 @@
     "body-parser": "^1.20.3",
     "cloudinary": "^2.10.0",
     "connect-flash": "^0.1.1",
+    "connect-mongo": "3.2.0",
     "dotenv": "^17.4.2",
     "ejs": "^3.1.10",
     "ejs-mate": "^4.0.0",

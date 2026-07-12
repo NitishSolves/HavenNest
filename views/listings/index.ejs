@@ -1,24 +1,42 @@
 <% layout("/layouts/boilerplate"); %>
 
 <% if (!activeCategory && !searchQuery) { %>
-<section class="hero">
-  <span class="hero-eyebrow">Curated stays, worldwide</span>
-  <h1>Find a place that feels like a haven, wherever you land.</h1>
-  <p class="lead">Beachfront cottages, mountain chalets, city lofts, and everything between — booked directly with hosts you can trust.</p>
+<section class="hero hero-home">
+  <div class="hero-copy">
+    <span class="hero-eyebrow">Curated stays, worldwide</span>
+    <h1>Find a place that feels calm, premium, and easy to book.</h1>
+    <p class="lead">Beachfront cottages, mountain chalets, city lofts, and everything between — built for fast discovery without clutter.</p>
 
-  <form class="hero-search" action="/listings" method="GET" role="search" aria-label="Search listings">
-    <label for="hero-search-input" class="visually-hidden">Search by city, country, or listing name</label>
-    <input id="hero-search-input" type="search" name="q" placeholder="Try “Tokyo”, “beachfront”, or “Aspen”">
-    <button type="submit">
-      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Search
-    </button>
-  </form>
+    <form class="hero-search" action="/listings" method="GET" role="search" aria-label="Search listings">
+      <label for="hero-search-input" class="visually-hidden">Search by city, country, or listing name</label>
+      <input id="hero-search-input" type="search" name="q" placeholder="Try “Tokyo”, “beachfront”, or “Aspen”">
+      <button type="submit">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Search
+      </button>
+    </form>
 
-  <div class="hero-stats">
-    <div><strong><%= allListings.length %>+</strong><span>Stays live now</span></div>
-    <div><strong><%= categories.length %></strong><span>Trip categories</span></div>
-    <div><strong>24/7</strong><span>Host support</span></div>
+    <div class="hero-stats">
+      <div><strong><%= allListings.length %>+</strong><span>Stays live now</span></div>
+      <div><strong><%= categories.length %></strong><span>Trip categories</span></div>
+      <div><strong>24/7</strong><span>Host support</span></div>
+    </div>
   </div>
+
+  <aside class="hero-panel" aria-label="Popular searches">
+    <p class="hero-panel-label">Popular searches</p>
+    <div class="hero-pill-grid">
+      <a class="hero-pill" href="/listings?q=beachfront">Beachfront</a>
+      <a class="hero-pill" href="/listings?q=mountain">Mountain</a>
+      <a class="hero-pill" href="/listings?q=cabin">Cabin</a>
+      <a class="hero-pill" href="/listings?q=city">City</a>
+      <a class="hero-pill" href="/listings?q=villa">Villa</a>
+      <a class="hero-pill" href="/listings?q=family">Family-friendly</a>
+    </div>
+    <div class="hero-panel-note">
+      <span>Refined discovery</span>
+      <p>Search quickly, filter cleanly, and move into the listings without visual noise.</p>
+    </div>
+  </aside>
 </section>
 <% } %>
 
@@ -44,7 +62,7 @@
 </nav>
 
 <% if (searchQuery) { %>
-  <p class="mt-3 text-muted">
+  <p class="mt-3 text-muted search-summary">
     <%= allListings.length %> result<%= allListings.length === 1 ? '' : 's' %> for “<%= searchQuery %>”
     &middot; <a href="/listings">Clear search</a>
   </p>
@@ -58,7 +76,7 @@
     <a href="/listings" class="btn btn-primary-hn mt-2">Browse all stays</a>
   </div>
 <% } else { %>
-  <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4 mt-1">
+  <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4 mt-1 listing-grid">
     <% for(let listing of allListings){ %>
       <%- include("../includes/listing-card.ejs", { listing }) %>
     <% } %>

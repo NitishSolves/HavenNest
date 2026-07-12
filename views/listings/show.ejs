@@ -1,250 +1,234 @@
 <% layout("/layouts/boilerplate") %>
 
-<div class="row mt-4">
-  <div class="col-lg-8 offset-lg-2">
-    <nav aria-label="Breadcrumb" class="mb-2">
-      <a href="/listings" class="text-muted small text-decoration-none"
-        ><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to all
-        stays</a
-      >
-    </nav>
+<%
+  const reviewCount = listing.reviews ? listing.reviews.length : 0;
+  const avgRating = reviewCount > 0
+    ? (listing.reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewCount).toFixed(1)
+    : null;
+  const isOwnerView = Boolean(currUser && listing.owner && listing.owner._id.equals(currUser._id));
+  const hostInitial = listing.owner && listing.owner.username ? listing.owner.username.charAt(0).toUpperCase() : "H";
+%>
 
-    <div class="d-flex justify-content-between align-items-start gap-3">
-      <h1 class="mb-1"><%= listing.title %></h1>
-      <% if (currUser) { %>
-      <form
-        class="favorite-form flex-shrink-0"
-        method="POST"
-        action="/listings/<%= listing._id %>/favorite"
-      >
-        <button
-          type="submit"
-          class="favorite-btn <%= isFavorited ? 'favorited' : '' %>"
-          style="position: static"
-          aria-pressed="<%= isFavorited %>"
-          aria-label="<%= isFavorited ? 'Remove from wishlist' : 'Add to wishlist' %>"
-        >
-          <i
-            class="<%= isFavorited ? 'fa-solid' : 'fa-regular' %> fa-heart"
-            aria-hidden="true"
-          ></i>
-        </button>
-      </form>
-      <% } %>
-    </div>
-    <p class="text-muted">
-      <i class="fa-solid fa-location-dot" aria-hidden="true"></i> <%=
-      listing.location %>, <%= listing.country %>
-    </p>
+<div class="show-page mt-4 mb-5">
+  <nav aria-label="Breadcrumb" class="mb-3">
+    <a href="/listings" class="show-back">
+      <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to all stays
+    </a>
+  </nav>
 
-    <div class="card col-12 show-card listing-card mb-4">
-      <img
-        src="<%= listing.image && listing.image.url ? listing.image.url : listing.image %>"
-        class="card-img-top show-img"
-        alt="<%= listing.title %>, a stay in <%= listing.location %>, <%= listing.country %>"
-      />
-      <div class="card-body px-0">
-        <p class="card-text">
-          Hosted by
-          <i
-            ><%= listing.owner ? listing.owner.username : "a HavenNest host"
-            %></i
-          >
-        </p>
-        <p class="card-text"><%= listing.description %></p>
-        <p class="card-text fs-5">
-          <b
-            >&#8377; <%= listing.price ? listing.price.toLocaleString("en-IN") :
-            "N/A" %></b
-          >
-          <span class="text-muted">/ night</span>
-        </p>
+  <div class="show-header">
+    <div>
+      <h1 class="show-title"><%= listing.title %></h1>
+      <div class="show-meta-row">
+        <span class="show-meta-item"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> <%= listing.location %>, <%= listing.country %></span>
+        <% if (avgRating) { %>
+          <span class="show-meta-item show-meta-rating"><i class="fa-solid fa-star" aria-hidden="true"></i> <%= avgRating %> <span class="text-muted">(<%= reviewCount %> review<%= reviewCount === 1 ? "" : "s" %>)</span></span>
+        <% } else { %>
+          <span class="show-meta-item text-muted">No reviews yet</span>
+        <% } %>
       </div>
     </div>
 
-    <% if(currUser && listing.owner && listing.owner._id.equals(currUser._id))
-    {%>
-    <div class="btns mb-4">
-      <a
-        href="/listings/<%= listing._id %>/edit"
-        class="btn btn-primary-hn edit-btn"
-        >Edit listing</a
-      >
-      <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
-        <button class="btn btn-outline-danger-hn">Delete listing</button>
+    <% if (currUser && !isOwnerView) { %>
+      <form class="favorite-form flex-shrink-0" method="POST" action="/listings/<%= listing._id %>/favorite">
+        <button
+          type="submit"
+          class="favorite-btn favorite-btn-static <%= isFavorited ? 'favorited' : '' %>"
+          aria-pressed="<%= isFavorited %>"
+          aria-label="<%= isFavorited ? 'Remove from wishlist' : 'Add to wishlist' %>"
+        >
+          <i class="<%= isFavorited ? 'fa-solid' : 'fa-regular' %> fa-heart" aria-hidden="true"></i>
+        </button>
       </form>
-    </div>
     <% } %>
+  </div>
 
-    <hr />
-    <h2 class="h4">Where you'll be</h2>
-    <p class="text-muted small mb-2">
-      <%= listing.location %>, <%= listing.country %>
-    </p>
-    <div
-      id="map"
-      role="img"
-      aria-label="Map showing the location of <%= listing.location %>, <%= listing.country %>"
-    ></div>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        (function () {
-        var coords = <%- JSON.stringify(listing.geometry && listing.geometry.coordinates ? listing.geometry.coordinates : null) %>;
-        var locationText = <%- JSON.stringify(listing.location || "") %>;
-        var countryText = <%- JSON.stringify(listing.country || "") %>;
+  <div class="show-hero">
+    <img
+      src="<%= listing.image && listing.image.url ? listing.image.url : listing.image %>"
+      class="show-hero-img"
+      alt="<%= listing.title %>, a stay in <%= listing.location %>, <%= listing.country %>"
+    />
+  </div>
 
-        var LANDMARK_ZOOM = 10;
+  <div class="row g-4 g-lg-5 show-content">
+    <div class="col-lg-8 order-2 order-lg-1">
+      <div class="host-row">
+        <div class="host-avatar" aria-hidden="true"><%= hostInitial %></div>
+        <div>
+          <p class="host-name">Hosted by <%= listing.owner ? listing.owner.username : "a HavenNest host" %></p>
+          <p class="host-sub text-muted">HavenNest verified host</p>
+        </div>
+      </div>
 
-        function renderUnavailable() {
-          var mapEl = document.getElementById("map");
-          mapEl.innerHTML =
-            '<div class="map-unavailable"><span><i class="fa-solid fa-map-location-dot me-2" aria-hidden="true"></i>' +
-            "We couldn't locate this stay on the map right now. Try refreshing the page.</span></div>";
-        }
+      <p class="show-description"><%= listing.description %></p>
 
-        if (!Array.isArray(coords) || coords.length !== 2) {
-          renderUnavailable();
-          return;
-        }
+      <hr class="show-divider" />
 
-        var lat = coords[1];
-        var lng = coords[0];
-        var label = locationText + (countryText ? ", " + countryText : "");
+      <h2 class="h5 show-section-title">Where you'll be</h2>
+      <p class="text-muted small mb-2">
+        <%= listing.location %>, <%= listing.country %>
+      </p>
+      <div
+        id="map"
+        role="img"
+        aria-label="Map showing the location of <%= listing.location %>, <%= listing.country %>"
+      ></div>
+    </div>
 
-        var map = L.map("map", { scrollWheelZoom: false }).setView([lat, lng], LANDMARK_ZOOM);
+    <div class="col-lg-4 order-1 order-lg-2">
+      <aside class="price-card">
+        <p class="price-card-amount">
+          &#8377;<%= listing.price ? listing.price.toLocaleString("en-IN") : "N/A" %>
+          <span class="text-muted fw-normal">/ night</span>
+        </p>
 
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          maxZoom: 18,
-        }).addTo(map);
+        <% if (avgRating) { %>
+          <p class="price-card-rating"><i class="fa-solid fa-star" aria-hidden="true"></i> <%= avgRating %> &middot; <a href="#reviews"><%= reviewCount %> review<%= reviewCount === 1 ? "" : "s" %></a></p>
+        <% } %>
 
-        L.marker([lat, lng], {
-          icon: L.icon({
-            iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-            iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-            shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-          }),
-        })
-          .addTo(map)
-          .bindPopup(label)
-          .openPopup();
-        })();
-      });
-    </script>
+        <% if (isOwnerView) { %>
+          <div class="price-card-actions">
+            <a href="/listings/<%= listing._id %>/edit" class="btn btn-primary-hn edit-btn w-100">Edit listing</a>
+            <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
+              <button class="btn btn-outline-danger-hn w-100">Delete listing</button>
+            </form>
+          </div>
+          <p class="price-card-note">This listing is live on HavenNest — only you can edit or remove it.</p>
+        <% } else if (currUser) { %>
+          <form class="favorite-form" method="POST" action="/listings/<%= listing._id %>/favorite">
+            <button
+              type="submit"
+              class="btn w-100 favorite-btn-wide <%= isFavorited ? 'favorited' : '' %>"
+              aria-pressed="<%= isFavorited %>"
+            >
+              <i class="<%= isFavorited ? 'fa-solid' : 'fa-regular' %> fa-heart" aria-hidden="true"></i>
+              <%= isFavorited ? "Saved to wishlist" : "Save to wishlist" %>
+            </button>
+          </form>
+          <p class="price-card-note">Scroll down to leave a review after your stay.</p>
+        <% } else { %>
+          <a href="/login" class="btn btn-primary-hn w-100">Log in to save this stay</a>
+          <p class="price-card-note">Create a free account to build your wishlist and leave reviews.</p>
+        <% } %>
+      </aside>
+    </div>
+  </div>
 
-    <div class="mt-5">
-      <% if(currUser) { %>
-      <h2 class="h4">Leave a review</h2>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      (function () {
+      var coords = <%- JSON.stringify(listing.geometry && listing.geometry.coordinates ? listing.geometry.coordinates : null) %>;
+      var locationText = <%- JSON.stringify(listing.location || "") %>;
+      var countryText = <%- JSON.stringify(listing.country || "") %>;
+
+      var LANDMARK_ZOOM = 10;
+
+      function renderUnavailable() {
+        var mapEl = document.getElementById("map");
+        mapEl.innerHTML =
+          '<div class="map-unavailable"><span><i class="fa-solid fa-map-location-dot me-2" aria-hidden="true"></i>' +
+          "We couldn't locate this stay on the map right now. Try refreshing the page.</span></div>";
+      }
+
+      if (!Array.isArray(coords) || coords.length !== 2) {
+        renderUnavailable();
+        return;
+      }
+
+      var lat = coords[1];
+      var lng = coords[0];
+      var label = locationText + (countryText ? ", " + countryText : "");
+
+      var map = L.map("map", { scrollWheelZoom: false }).setView([lat, lng], LANDMARK_ZOOM);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18,
+      }).addTo(map);
+
+      L.marker([lat, lng], {
+        icon: L.icon({
+          iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+          iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+          shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+        }),
+      })
+        .addTo(map)
+        .bindPopup(label)
+        .openPopup();
+      })();
+    });
+  </script>
+
+  <div class="show-reviews" id="reviews">
+    <% if(currUser) { %>
+      <h2 class="h5 show-section-title">Leave a review</h2>
       <form
         action="/listings/<%= listing._id %>/reviews"
         method="POST"
         novalidate
-        class="needs-validation surface-card"
+        class="needs-validation surface-card review-form"
       >
         <div class="mb-3">
           <label for="rating" class="form-label d-block">Rating</label>
           <fieldset class="starability-slot">
             <legend class="visually-hidden">Star rating</legend>
-            <input
-              type="radio"
-              id="no-rate"
-              class="input-no-rate"
-              name="review[rating]"
-              value="1"
-              checked
-              aria-label="No rating."
-            />
-            <input
-              type="radio"
-              id="first-rate1"
-              name="review[rating]"
-              value="1"
-            />
+            <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
+            <input type="radio" id="first-rate1" name="review[rating]" value="1" />
             <label for="first-rate1" title="Terrible">1 star</label>
-            <input
-              type="radio"
-              id="first-rate2"
-              name="review[rating]"
-              value="2"
-            />
+            <input type="radio" id="first-rate2" name="review[rating]" value="2" />
             <label for="first-rate2" title="Not good">2 stars</label>
-            <input
-              type="radio"
-              id="first-rate3"
-              name="review[rating]"
-              value="3"
-            />
+            <input type="radio" id="first-rate3" name="review[rating]" value="3" />
             <label for="first-rate3" title="Average">3 stars</label>
-            <input
-              type="radio"
-              id="first-rate4"
-              name="review[rating]"
-              value="4"
-            />
+            <input type="radio" id="first-rate4" name="review[rating]" value="4" />
             <label for="first-rate4" title="Very good">4 stars</label>
-            <input
-              type="radio"
-              id="first-rate5"
-              name="review[rating]"
-              value="5"
-            />
+            <input type="radio" id="first-rate5" name="review[rating]" value="5" />
             <label for="first-rate5" title="Amazing">5 stars</label>
           </fieldset>
         </div>
 
         <div class="mb-3">
           <label for="comment" class="form-label">Comment</label>
-          <textarea
-            name="review[comment]"
-            id="comment"
-            rows="4"
-            class="form-control"
-            required
-          ></textarea>
-          <div class="invalid-feedback">
-            Please write a comment for your review.
-          </div>
+          <textarea name="review[comment]" id="comment" rows="4" class="form-control" required placeholder="What stood out about your stay?"></textarea>
+          <div class="invalid-feedback">Please write a comment for your review.</div>
         </div>
-        <button class="btn btn-primary-hn">Submit review</button>
+        <button class="btn btn-primary-hn" type="submit">Submit review</button>
       </form>
-      <hr class="mt-4" />
-      <% } %> <% if(listing.reviews.length > 0) {%>
-      <h2 class="h4 mb-3">
-        All reviews
-        <span class="text-muted">(<%= listing.reviews.length %>)</span>
+    <% } %>
+
+    <% if(listing.reviews.length > 0) { %>
+      <h2 class="h5 show-section-title show-reviews-title">
+        All reviews <span class="text-muted">(<%= listing.reviews.length %>)</span>
       </h2>
       <div class="row g-3">
         <% for(review of listing.reviews){ %>
         <div class="col-md-6">
-          <div class="card surface-card h-100">
-            <div class="card-body px-0 pt-0">
-              <h3 class="h6 card-title">
-                @<%= review.author ? review.author.username : "deleted user" %>
-              </h3>
-              <p
-                class="starability-result card-text"
-                data-rating="<%= review.rating %>"
-                aria-label="Rated <%= review.rating %> out of 5"
-              ></p>
-              <p class="card-text"><%= review.comment %></p>
+          <div class="review-card">
+            <div class="review-card-head">
+              <div class="review-avatar" aria-hidden="true">
+                <%= review.author && review.author.username ? review.author.username.charAt(0).toUpperCase() : "?" %>
+              </div>
+              <div>
+                <p class="review-author">@<%= review.author ? review.author.username : "deleted user" %></p>
+                <p class="starability-result" data-rating="<%= review.rating %>" aria-label="Rated <%= review.rating %> out of 5"></p>
+              </div>
+            </div>
+            <p class="review-comment"><%= review.comment %></p>
 
-              <% if (currUser && review.author &&
-              review.author._id.equals(currUser._id)) { %>
-              <form
-                method="POST"
-                action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
-              >
+            <% if (currUser && review.author && review.author._id.equals(currUser._id)) { %>
+              <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" class="review-delete-form">
                 <button class="btn btn-sm btn-outline-danger-hn">Delete</button>
               </form>
-              <% } %>
-            </div>
+            <% } %>
           </div>
         </div>
         <% } %>
       </div>
-      <% } %>
-    </div>
+    <% } else if (!currUser) { %>
+      <p class="text-muted">No reviews yet — log in to be the first to share your stay.</p>
+    <% } %>
   </div>
 </div>
